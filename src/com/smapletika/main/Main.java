@@ -5,6 +5,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
@@ -12,8 +17,36 @@ import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.sax.BodyContentHandler;
 import org.xml.sax.SAXException;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+
+
 public class Main {
 	public static void main(String args[]){
+		Connection con = null;
+        Statement st = null;
+        ResultSet rs = null;
+        
+        String url = "jdbc:mysql://localhost:3306/reader?user=root";
+        String user = "root";
+        String password = "";
+        
+        JsonObject obj = new JsonObject();
+        JsonArray array = new JsonArray();
+        
+        try {
+			con = DriverManager.getConnection(url);
+			st = con.createStatement();
+            rs = st.executeQuery("SELECT * FROM Highlights");
+			  while(rs.next()){
+				  System.out.println("Start RESULTS===>>>>>>"+rs.getInt("startOffset"));
+				  System.out.println("End RESULTS===>>>>>>"+rs.getInt("endOffset"));
+			  }
+			} catch (SQLException e2) {
+				 
+				e2.printStackTrace();
+			}
+		
 		BodyContentHandler handler1 = new BodyContentHandler();
 		BodyContentHandler handler2 = new BodyContentHandler();
 		int startOffset = 130;
