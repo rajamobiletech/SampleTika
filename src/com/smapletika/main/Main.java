@@ -95,15 +95,21 @@ public class Main {
 			Highlight highlight = (Highlight) iterator.next();
 			String newStr1 = secondPageContent.substring(highlight.getStartOffset(), highlight.getEndOffset());
 			if(newStr1.equals(highlight.getSelectedText())) {
-				System.out.println("Success!!! We found the highlight at correct offset===>>>>" + highlight.getSelectedText() );
+				System.out.println("Success !! Highlighted Text===>>>>" + highlight.getSelectedText());
 			}else {
-				String originalHighlight = firstPageContent.substring(highlight.getStartOffset()-5, highlight.getEndOffset()+5);
-				System.out.println("Failed to found highlight at old offset for ====>>>>"+ highlight.getSelectedText());
+				int startRangeOffsetValue = (highlight.getStartOffset()-5 > 0) ? highlight.getStartOffset()-5 : highlight.getStartOffset();
+				int endOffRangeSetValue = (highlight.getEndOffset()+5) < firstPageContent.length() ? highlight.getEndOffset()+5 : highlight.getEndOffset();
+				String originalHighlight = firstPageContent.substring(startRangeOffsetValue , endOffRangeSetValue);
+				System.out.println("Range Highlighted Text===>>>>" + originalHighlight);
+				System.out.println("Failed !! Highlighted Text===>>>>" + highlight.getSelectedText());
+				
 				Pattern p = Pattern.compile(originalHighlight);
 				Matcher matcher = p.matcher(secondPageContent);
 				while (matcher.find()) {
 				    //System.out.println(matcher.group()+ ":	" +"start =" + (matcher.start()+5) + " end = " + (matcher.end()-5));
-				    System.out.println("updated offset for "+highlight.getSelectedText() + "======>>>"+ (matcher.start()+5) +"===="+ (matcher.end()-5));
+				    //System.out.println("updated offset for "+highlight.getSelectedText() + "======>>>"+ (matcher.start()+5) +"===="+ (matcher.end()-5));
+				    //System.out.println("updated offset for "+highlight.getSelectedText() + "======>>>" + (matcher.start()-5>0? matcher.start()-5 : matcher.start() )+"===="+ (matcher.end()+5 > secondPageContent.length() ? matcher.end() : matcher.end()-5));
+					System.out.println("Updating Offset");
 				}
 			}
 		}
