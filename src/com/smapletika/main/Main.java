@@ -10,6 +10,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Iterator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
@@ -17,6 +20,7 @@ import org.apache.tika.sax.BodyContentHandler;
 import org.xml.sax.SAXException;
 
 import com.sampletika.model.Highlight;
+
 import org.json.simple.JSONArray;
 
 public class Main {
@@ -76,11 +80,9 @@ public class Main {
 	        parser.parse(fis, handler1, metadata);
 	        firstPageContent = handler1.toString().replaceAll("\t", "");
 	        firstPageContent = firstPageContent.replaceAll("\n", "");
-	        System.out.println("File1:>>>>>>>"+firstPageContent);
-	        //String1 = handler1.toString();
 	        parser1.parse(f2, handler2, metadata1);
-	        secondPageContent = handler2.toString();
-	        System.out.println("File2:>>>>>>>"+secondPageContent);
+	        secondPageContent = handler2.toString().replaceAll("\t", "").replaceAll("\n", "");
+	        //System.out.println("File2:>>>>>>>"+secondPageContent);
 	        
 	    } catch (IOException | SAXException | TikaException e) {
 		e.printStackTrace();
@@ -91,9 +93,19 @@ public class Main {
 	public static void getAllHightlight() {
 		for (Iterator iterator = highlights.iterator(); iterator.hasNext();) {
 			Highlight highlight = (Highlight) iterator.next();
-			//System.out.println("Highlights===>>>"+ highlight.getSelectedText());
-			String newStr1 = firstPageContent.substring(highlight.getStartOffset(), highlight.getEndOffset());
-		    System.out.println("Highlighted String="+newStr1);
+			String newStr1 = secondPageContent.substring(highlight.getStartOffset(), highlight.getEndOffset());
+			if(newStr1.equals(highlight.getSelectedText())) {
+				System.out.println("Success!!! We found the highlight at correct offset===>>>>" + highlight.getSelectedText() );
+			}else {
+				String originalHighlight = firstPageContent.substring(highlight.getStartOffset()-5, highlight.getEndOffset()+5);
+				System.out.println("Failed to found highlight at old offset for ====>>>>"+ highlight.getSelectedText());
+				Pattern p = Pattern.compile(originalHighlight);
+				Matcher matcher = p.matcher(secondPageContent);
+				while (matcher.find()) {
+				    //System.out.println(matcher.group()+ ":	" +"start =" + (matcher.start()+5) + " end = " + (matcher.end()-5));
+				    System.out.println("updated offset for "+highlight.getSelectedText() + "======>>>"+ (matcher.start()+5) +"===="+ (matcher.end()-5));
+				}
+			}
 		}
 	}
 }
