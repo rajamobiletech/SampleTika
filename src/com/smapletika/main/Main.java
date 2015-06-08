@@ -27,6 +27,7 @@ public class Main {
 	public static String firstPageContent;
 	public static String secondPageContent;
 	public static JSONArray highlights;
+	public static JSONArray newHighlights;
 	
 	public static void main(String args[]){
 		getDbHighlights();
@@ -42,7 +43,8 @@ public class Main {
         String url = "jdbc:mysql://localhost:3306/reader?user=root";
         
         try {
-        	highlights = new JSONArray(); 
+        	highlights = new JSONArray();
+        	newHighlights = new JSONArray();
 			con = DriverManager.getConnection(url);
 			st = con.createStatement();
             rs = st.executeQuery("SELECT * FROM Highlights where deleted=0");
@@ -92,35 +94,60 @@ public class Main {
 	public static void getAllHightlight() {
 		for (Iterator iterator = highlights.iterator(); iterator.hasNext();) {
 			Highlight highlight = (Highlight) iterator.next();
-			String newStr1 = secondPageContent.substring(highlight.getStartOffset(), highlight.getEndOffset());
-			if(newStr1.equals(highlight.getSelectedText())) {
-				System.out.println("Success !! Highlighted Text===>>>>" + highlight.getSelectedText());
-			}else {
-				int startRangeOffsetValue = (highlight.getStartOffset()-5 > 0) ? highlight.getStartOffset()-5 : highlight.getStartOffset();
-				int endOffRangeSetValue = (highlight.getEndOffset()+5) < firstPageContent.length() ? highlight.getEndOffset()+5 : highlight.getEndOffset();
-				String originalHighlight = firstPageContent.substring(startRangeOffsetValue , endOffRangeSetValue);
-				System.out.println("Range Highlighted Text===>>>>" + originalHighlight);
-				System.out.println("Failed !! Highlighted Text===>>>>" + highlight.getSelectedText());
-				int flag=0;
-				Pattern p = Pattern.compile(originalHighlight);
-				Matcher matcher = p.matcher(secondPageContent);
-				while (matcher.find()) {
-				    //System.out.println(matcher.group()+ ":	" +"start =" + (matcher.start()) + " end = " + (matcher.end()));
-				    //System.out.println("updated offset for "+highlight.getSelectedText() + "======>>>"+ (matcher.start()+5) +"===="+ (matcher.end()-5));
-				    System.out.println("updated offset for "+highlight.getSelectedText() + "======>>>" + (matcher.start()-5>0? matcher.start()+5 : matcher.start() )+"===="+ (matcher.end()+5 > secondPageContent.length() ? matcher.end() : matcher.end()-5));
-				    flag=1;
-				}
-				if(flag == 0){
-					p = Pattern.compile(highlight.getSelectedText());
-					matcher = p.matcher(secondPageContent);
-					while(matcher.find()){
-						System.out.println("Finally found " + highlight.getSelectedText() +" @ start =" + (matcher.start()) + " end = " + (matcher.end()));
-						//break;
+			if(!validateSameOffset(highlight)) {
+				if(!validateDiffOffSet(highlight)) {
+					if(!validateOneOccur(highlight)) {
+						System.out.println("validateOneOccur Failure !!!!");
 					}
-					flag =1;
 				}
 			}
 		}
+	}
+
+	public static Boolean validateSameOffset(Highlight highlight) {
+		String highlightText = secondPageContent.substring(highlight.getStartOffset(), highlight.getEndOffset());
+		if(highlightText.equals(highlight.getSelectedText())) {
+			newHighlights.add(new Highlight(highlight.getId(), highlight.getStartOffset(), highlight.getEndOffset(), highlight.getPageId(),highlight.getSelectedText()));
+			System.out.println("====>>>> validateSameOffset Success !!!");
+		}else {
+			return false;
+		}
+		return true;
+	}
+
+	public static Boolean validateDiffOffSet(Highlight highlight) {
+		int startRangeOffsetValue = (highlight.getStartOffset()-5 > 0) ? highlight.getStartOffset()-5 : highlight.getStartOffset();
+		int endOffRangeSetValue = (highlight.getEndOffset()+5) < firstPageContent.length() ? highlight.getEndOffset()+5 : highlight.getEndOffset();
+		String originalHighlight = firstPageContent.substring(startRangeOffsetValue , endOffRangeSetValue);
+//		System.out.println("Range Highlighted Text===>>>>" + originalHighlight);
+//		System.out.println("Failed !! Highlighted Text===>>>>" + highlight.getSelectedText());
+		int flag=0;
+		Pattern p = Pattern.compile(originalHighlight);
+		Matcher matcher = p.matcher(secondPageContent);
+		while (matcher.find()) {
+			newHighlights.add(new Highlight(highlight.getId(), (matcher.start()-5>0? matcher.start()+5 : matcher.start()), (matcher.end()+5 > secondPageContent.length() ? matcher.end() : matcher.end()-5), highlight.getPageId(),highlight.getSelectedText()));
+			System.out.println("====>>>> validateDiffOffSet Success !!!");
+		    flag=1;
+		}
+		if(flag == 0) {
+			return false;
+		}
+		return true;
+	}
+	
+	public static Boolean validateOneOccur(Highlight highlight) {
+			int count = 0;
+			Pattern p = Pattern.compile(highlight.getSelectedText());
+			Matcher matcher = p.matcher(secondPageContent);
+			while(matcher.find() && count < 2){
+				count++;
+			}
+			if(count == 1) {
+				newHighlights.add(new Highlight(highlight.getId(), matcher.start(), matcher.end(), highlight.getPageId(),highlight.getSelectedText()));
+				System.out.println("====>>>> validateOneOccur Success !!!");
+				return true;
+			} 
+		return false;
 	}
 }
 
