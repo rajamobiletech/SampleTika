@@ -83,7 +83,6 @@ public class Main {
 	        parser1.parse(f2, handler2, metadata1);
 	        secondPageContent = handler2.toString().replaceAll("\t", "").replaceAll("\n", "");
 	        //System.out.println("File2:>>>>>>>"+secondPageContent);
-	        
 	    } catch (IOException | SAXException | TikaException e) {
 		e.printStackTrace();
 		} finally {
@@ -102,14 +101,23 @@ public class Main {
 				String originalHighlight = firstPageContent.substring(startRangeOffsetValue , endOffRangeSetValue);
 				System.out.println("Range Highlighted Text===>>>>" + originalHighlight);
 				System.out.println("Failed !! Highlighted Text===>>>>" + highlight.getSelectedText());
-				
+				int flag=0;
 				Pattern p = Pattern.compile(originalHighlight);
 				Matcher matcher = p.matcher(secondPageContent);
 				while (matcher.find()) {
-				    //System.out.println(matcher.group()+ ":	" +"start =" + (matcher.start()+5) + " end = " + (matcher.end()-5));
+				    //System.out.println(matcher.group()+ ":	" +"start =" + (matcher.start()) + " end = " + (matcher.end()));
 				    //System.out.println("updated offset for "+highlight.getSelectedText() + "======>>>"+ (matcher.start()+5) +"===="+ (matcher.end()-5));
-				    //System.out.println("updated offset for "+highlight.getSelectedText() + "======>>>" + (matcher.start()-5>0? matcher.start()-5 : matcher.start() )+"===="+ (matcher.end()+5 > secondPageContent.length() ? matcher.end() : matcher.end()-5));
-					System.out.println("Updating Offset");
+				    System.out.println("updated offset for "+highlight.getSelectedText() + "======>>>" + (matcher.start()-5>0? matcher.start()+5 : matcher.start() )+"===="+ (matcher.end()+5 > secondPageContent.length() ? matcher.end() : matcher.end()-5));
+				    flag=1;
+				}
+				if(flag == 0){
+					p = Pattern.compile(highlight.getSelectedText());
+					matcher = p.matcher(secondPageContent);
+					while(matcher.find()){
+						System.out.println("Finally found " + highlight.getSelectedText() +" @ start =" + (matcher.start()) + " end = " + (matcher.end()));
+						//break;
+					}
+					flag =1;
 				}
 			}
 		}
