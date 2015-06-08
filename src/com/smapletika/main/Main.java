@@ -63,8 +63,8 @@ public class Main {
 		BodyContentHandler handler1 = new BodyContentHandler();
 		BodyContentHandler handler2 = new BodyContentHandler();
 		
-		File file1 = new File("/Users/rajad/projects/testPages/1.xhtml");
-		File file2 = new File("/Users/rajad/projects/testPages/2.xhtml");
+		File file1 = new File("/Users/tilakk/projects/testPages/3.xhtml");
+		File file2 = new File("/Users/tilakk/projects/testPages/4.xhtml");
 		FileInputStream fis = null;
 		FileInputStream f2 = null;
 		try {
@@ -84,7 +84,7 @@ public class Main {
 	        firstPageContent = firstPageContent.replaceAll("\n", "");
 	        parser1.parse(f2, handler2, metadata1);
 	        secondPageContent = handler2.toString().replaceAll("\t", "").replaceAll("\n", "");
-	        //System.out.println("File2:>>>>>>>"+secondPageContent);
+	        System.out.println("File2:>>>>>>>"+secondPageContent);System.out.println();
 	    } catch (IOException | SAXException | TikaException e) {
 		e.printStackTrace();
 		} finally {
@@ -97,7 +97,7 @@ public class Main {
 			if(!validateSameOffset(highlight)) {
 				if(!validateDiffOffSet(highlight)) {
 					if(!validateOneOccur(highlight)) {
-						System.out.println("validateOneOccur Failure !!!!");
+						System.out.println("validateOneOccur Failure !!!! " +highlight.getSelectedText() );
 					}
 				}
 			}
@@ -108,7 +108,7 @@ public class Main {
 		String highlightText = secondPageContent.substring(highlight.getStartOffset(), highlight.getEndOffset());
 		if(highlightText.equals(highlight.getSelectedText())) {
 			newHighlights.add(new Highlight(highlight.getId(), highlight.getStartOffset(), highlight.getEndOffset(), highlight.getPageId(),highlight.getSelectedText()));
-			System.out.println("====>>>> validateSameOffset Success !!!");
+			System.out.println("====>>>> validateSameOffset Success !!! " + highlight.getSelectedText());
 		}else {
 			return false;
 		}
@@ -116,17 +116,22 @@ public class Main {
 	}
 
 	public static Boolean validateDiffOffSet(Highlight highlight) {
+		int count = 0;
 		int startRangeOffsetValue = (highlight.getStartOffset()-5 > 0) ? highlight.getStartOffset()-5 : highlight.getStartOffset();
 		int endOffRangeSetValue = (highlight.getEndOffset()+5) < firstPageContent.length() ? highlight.getEndOffset()+5 : highlight.getEndOffset();
+		System.out.println("startRangeOffsetValue=== " + startRangeOffsetValue + "endOffRangeSetValue=== " + endOffRangeSetValue + " firstPageContent.length=== " + firstPageContent.length() );
 		String originalHighlight = firstPageContent.substring(startRangeOffsetValue , endOffRangeSetValue);
-//		System.out.println("Range Highlighted Text===>>>>" + originalHighlight);
-//		System.out.println("Failed !! Highlighted Text===>>>>" + highlight.getSelectedText());
+		System.out.println("originalHighlight===>>>>" + originalHighlight);
 		int flag=0;
 		Pattern p = Pattern.compile(originalHighlight);
 		Matcher matcher = p.matcher(secondPageContent);
-		while (matcher.find()) {
+		while (matcher.find() && count < 2) {
+			count++;
+		}
+		matcher = p.matcher(secondPageContent);
+		if(count ==1 && matcher.find()){
 			newHighlights.add(new Highlight(highlight.getId(), (matcher.start()-5>0? matcher.start()+5 : matcher.start()), (matcher.end()+5 > secondPageContent.length() ? matcher.end() : matcher.end()-5), highlight.getPageId(),highlight.getSelectedText()));
-			System.out.println("====>>>> validateDiffOffSet Success !!!");
+			System.out.println("====>>>> validateDiffOffSet Success !!! " + highlight.getSelectedText());
 		    flag=1;
 		}
 		if(flag == 0) {
@@ -142,9 +147,10 @@ public class Main {
 			while(matcher.find() && count < 2){
 				count++;
 			}
-			if(count == 1) {
+			matcher = p.matcher(secondPageContent);
+			if(count == 1 && matcher.find()) {
 				newHighlights.add(new Highlight(highlight.getId(), matcher.start(), matcher.end(), highlight.getPageId(),highlight.getSelectedText()));
-				System.out.println("====>>>> validateOneOccur Success !!!");
+				System.out.println("====>>>> validateOneOccur Success !!! " + highlight.getSelectedText());
 				return true;
 			} 
 		return false;
