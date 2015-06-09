@@ -13,6 +13,7 @@ import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
@@ -22,19 +23,51 @@ import org.xml.sax.SAXException;
 import com.sampletika.model.Highlight;
 
 import org.json.simple.JSONArray;
+import org.jsoup.Jsoup;
+import org.jsoup.select.Elements;
+
 
 public class Main {
 	public static String firstPageContent;
 	public static String secondPageContent;
 	public static JSONArray highlights;
 	public static JSONArray newHighlights;
+	public static org.jsoup.nodes.Document doc1;
+	public static org.jsoup.nodes.Document doc2;
 	
 	public static void main(String args[]){
+		getHtmlContent();
 		getDbHighlights();
 		getPageContent();
 		getAllHightlight();
 	}
 	
+	public static void getHtmlContent() {
+		File file1 = new File("/Users/tilakk/projects/testPages/3.xhtml");
+		File file2 = new File("/Users/tilakk/projects/testPages/4.xhtml");
+		//Document doc = JSoup.parse(file, null);
+		try {
+			doc1 = Jsoup.parse(file1, null);
+			Elements ele1 = doc1.getElementsByClass("inlinetermTerm");
+			ele1.remove();
+			Elements ele2 = doc1.getElementsByClass("inlinedialog");
+			ele2.remove();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			doc2 = Jsoup.parse(file2, null);
+			Elements ele1 = doc1.getElementsByClass("inlinetermTerm");
+			ele1.remove();
+			Elements ele2 = doc1.getElementsByClass("inlinedialog");
+			ele2.remove();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
 	public static void getDbHighlights() {
 		Connection con = null;
         Statement st = null;
