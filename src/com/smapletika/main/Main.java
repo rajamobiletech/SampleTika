@@ -196,7 +196,8 @@ public class Main {
 		String originalHighlight = firstPageContent.substring(startRangeOffsetValue , endOffRangeSetValue);
 		System.out.println("originalHighlight===>>>>" + originalHighlight);
 		int flag=0;
-		Pattern p = Pattern.compile(originalHighlight);
+		String escapedString = Pattern.quote(originalHighlight);
+		Pattern p = Pattern.compile(escapedString);
 		Matcher matcher = p.matcher(secondPageContent);
 		while (matcher.find() && count < 2) {
 			count++;
