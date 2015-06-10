@@ -1,4 +1,4 @@
-package com.smapletika.main;
+package com.sampletika.main;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -38,8 +38,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.jsoup.select.NodeTraversor;
-import org.jsoup.helper.W3CDom;
 
 public class Main {
 	public static String firstPageContent;

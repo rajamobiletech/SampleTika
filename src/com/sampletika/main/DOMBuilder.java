@@ -1,4 +1,4 @@
-package com.smapletika.main;
+package com.sampletika.main;
 
 import java.util.HashMap;
 import java.util.Map;
