@@ -1,9 +1,12 @@
 package com.smapletika.main;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -13,6 +16,14 @@ import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
@@ -24,48 +35,22 @@ import com.sampletika.model.Highlight;
 
 import org.json.simple.JSONArray;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-
+import org.jsoup.select.NodeTraversor;
+import org.jsoup.helper.W3CDom;
 
 public class Main {
 	public static String firstPageContent;
 	public static String secondPageContent;
 	public static JSONArray highlights;
 	public static JSONArray newHighlights;
-	public static org.jsoup.nodes.Document doc1;
-	public static org.jsoup.nodes.Document doc2;
 	
 	public static void main(String args[]){
-		getHtmlContent();
 		getDbHighlights();
 		getPageContent();
 		getAllHightlight();
-	}
-	
-	public static void getHtmlContent() {
-		File file1 = new File("/Users/tilakk/projects/testPages/3.xhtml");
-		File file2 = new File("/Users/tilakk/projects/testPages/4.xhtml");
-		//Document doc = JSoup.parse(file, null);
-		try {
-			doc1 = Jsoup.parse(file1, null);
-			Elements ele1 = doc1.getElementsByClass("inlinetermTerm");
-			ele1.remove();
-			Elements ele2 = doc1.getElementsByClass("inlinedialog");
-			ele2.remove();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		try {
-			doc2 = Jsoup.parse(file2, null);
-			Elements ele1 = doc1.getElementsByClass("inlinetermTerm");
-			ele1.remove();
-			Elements ele2 = doc1.getElementsByClass("inlinedialog");
-			ele2.remove();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 
 	public static void getDbHighlights() {
@@ -96,26 +81,81 @@ public class Main {
 		BodyContentHandler handler1 = new BodyContentHandler();
 		BodyContentHandler handler2 = new BodyContentHandler();
 		
-		File file1 = new File("/Users/tilakk/projects/testPages/3.xhtml");
-		File file2 = new File("/Users/tilakk/projects/testPages/4.xhtml");
-		FileInputStream fis = null;
-		FileInputStream f2 = null;
+		File file1 = new File("/Users/rajad/projects/testPages/1.xhtml");
+		File file2 = new File("/Users/rajad/projects/testPages/2.xhtml");
+		FileInputStream fis1 = null;
+		FileInputStream fis2 = null;
+		Document pageDoc1 = null;
+		Document pageDoc2 = null;
+		// Removing Glossary pop up elements from content of page v1.0 content
 		try {
-			fis = new FileInputStream(file1);
-			f2 = new FileInputStream(file2);
+			pageDoc1 = Jsoup.parse(file1, null);
+			Elements els = pageDoc1.getElementsByClass("WysiwygInLineTerm");
+			for (Element el : els) {
+			    Element j = el.prependElement("div");
+			    j.appendText("...");
+			}			
+			Elements ele1 = pageDoc1.getElementsByAttributeValue("style", "display: none;");
+			ele1.remove();
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		// Removing Glossary pop up elements from content page v2.0 content
+		try {
+			pageDoc2 = Jsoup.parse(file2, null);
+			Elements els = pageDoc2.getElementsByClass("WysiwygInLineTerm");
+			for (Element el : els) {
+			    Element j = el.prependElement("div");
+			    j.appendText("...");
+			}
+			Elements ele1 = pageDoc2.getElementsByAttributeValue("style", "display: none;");
+			ele1.remove();
+		} catch (IOException e) {	
+			e.printStackTrace();
+		}
+		
+		try {
+			fis1 = new FileInputStream(file1);
+			fis2 = new FileInputStream(file2);
 		} catch (FileNotFoundException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
+		
+		org.w3c.dom.Document w3cDoc1= DOMBuilder.jsoup2DOM(pageDoc1);
+		org.w3c.dom.Document w3cDoc2= DOMBuilder.jsoup2DOM(pageDoc2);
+
+        ByteArrayOutputStream outputStream1 = new ByteArrayOutputStream();
+        ByteArrayOutputStream outputStream2 = new ByteArrayOutputStream();
+        Source xmlSource1 = new DOMSource(w3cDoc1);
+        Source xmlSource2 = new DOMSource(w3cDoc2);
+        Result outputTarget1 = new StreamResult(outputStream1);
+        Result outputTarget2 = new StreamResult(outputStream2);
+        try {
+			TransformerFactory.newInstance().newTransformer().transform(xmlSource1, outputTarget1);
+			TransformerFactory.newInstance().newTransformer().transform(xmlSource2, outputTarget2);
+		} catch (TransformerConfigurationException e1) {
+			e1.printStackTrace();
+		} catch (TransformerException e1) {
+			e1.printStackTrace();
+		} catch (TransformerFactoryConfigurationError e1) {
+			e1.printStackTrace();
+		}
+        InputStream is1 = new ByteArrayInputStream(outputStream1.toByteArray());
+        InputStream is2 = new ByteArrayInputStream(outputStream2.toByteArray());
+        
+	    
 		AutoDetectParser parser = new AutoDetectParser();
 		Metadata metadata = new Metadata();
 		AutoDetectParser parser1 = new AutoDetectParser();
 		Metadata metadata1 = new Metadata();
 	    try {
-	        parser.parse(fis, handler1, metadata);
+	        parser.parse(is1, handler1, metadata);
 	        firstPageContent = handler1.toString().replaceAll("\t", "");
 	        firstPageContent = firstPageContent.replaceAll("\n", "");
-	        parser1.parse(f2, handler2, metadata1);
+	        System.out.println("File1:>>>>>>>"+firstPageContent);System.out.println();
+
+	        parser1.parse(is2, handler2, metadata1);
 	        secondPageContent = handler2.toString().replaceAll("\t", "").replaceAll("\n", "");
 	        System.out.println("File2:>>>>>>>"+secondPageContent);System.out.println();
 	    } catch (IOException | SAXException | TikaException e) {
@@ -123,7 +163,7 @@ public class Main {
 		} finally {
 		}
 	}
-
+	
 	public static void getAllHightlight() {
 		for (Iterator iterator = highlights.iterator(); iterator.hasNext();) {
 			Highlight highlight = (Highlight) iterator.next();
