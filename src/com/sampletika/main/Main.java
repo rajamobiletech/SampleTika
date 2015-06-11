@@ -79,8 +79,8 @@ public class Main {
 		BodyContentHandler handler1 = new BodyContentHandler();
 		BodyContentHandler handler2 = new BodyContentHandler();
 		
-		File file1 = new File("/Users/rajad/projects/testPages/1.xhtml");
-		File file2 = new File("/Users/rajad/projects/testPages/2.xhtml");
+		File file1 = new File("/Users/tilakk/projects/testPages/33.xhtml");
+		File file2 = new File("/Users/tilakk/projects/testPages/33new.xhtml");
 		FileInputStream fis1 = null;
 		FileInputStream fis2 = null;
 		Document pageDoc1 = null;
@@ -185,7 +185,7 @@ public class Main {
 		String m = highlightText.replaceAll("@{3,}", "");
 		if(m.equals(highlight.getSelectedText())) {
 			newHighlights.add(new Highlight(highlight.getId(), highlight.getStartOffset(), highlight.getEndOffset(), highlight.getPageId(),highlight.getSelectedText()));
-			System.out.println("====>>>> validateSameOffset Success !!! " + highlight.getSelectedText());
+			System.out.println("====>>>> validateSameOffset Success !!! " + secondPageContent.substring(highlight.getStartOffset(),highlight.getEndOffset()));
 		}else {
 			return false;
 		}
@@ -196,12 +196,12 @@ public class Main {
 		int count = 0;
 		int startRangeOffsetValue = (highlight.getStartOffset()-5 > 0) ? highlight.getStartOffset()-5 : highlight.getStartOffset();
 		int endOffRangeSetValue = (highlight.getEndOffset()+5) < firstPageContent.length() ? highlight.getEndOffset()+5 : highlight.getEndOffset();
-		System.out.println("1111===>>>>StartRangeOffsetValue= " + startRangeOffsetValue + " EndOffRangeSetValue= " + endOffRangeSetValue + " FirstPageContent.length= " + firstPageContent.length() );
+		//System.out.println("1111===>>>>StartRangeOffsetValue= " + startRangeOffsetValue + " EndOffRangeSetValue= " + endOffRangeSetValue + " FirstPageContent.length= " + firstPageContent.length() );
 		String originalHighlight = firstPageContent.substring(startRangeOffsetValue , endOffRangeSetValue);
 		int flag=0;
 		//originalHighlight = Pattern.quote(originalHighlight);
 		//originalHighlight = originalHighlight.replaceAll(regex, replacement)
-		originalHighlight = originalHighlight.replaceAll("[()]", ".");
+		originalHighlight = originalHighlight.replaceAll("[({})]", ".");
 		Pattern p = Pattern.compile(originalHighlight);
 		Matcher matcher = p.matcher(secondPageContent);
 		while (matcher.find() && count < 2) {
@@ -212,9 +212,9 @@ public class Main {
 			int startRangeOffsetValue2 = matcher.start()-5 > 0? matcher.start()+5 : matcher.start();
 			int endOffRangeSetValue2 = matcher.end()+5 < secondPageContent.length() ? matcher.end()-5 : matcher.end();
 			newHighlights.add(new Highlight(highlight.getId(), startRangeOffsetValue2, endOffRangeSetValue2, highlight.getPageId(),highlight.getSelectedText()));
-			System.out.println("2222===>>>>StartRangeOffsetValue= " + startRangeOffsetValue2 + " EndOffRangeSetValue= " + endOffRangeSetValue2 + " FecondPageContent.length= " + secondPageContent.length() );
-			System.out.println("originalHighlight===>>>>\"" + originalHighlight+"\"");
-			System.out.println("====>>>> validateDiffOffSet Success !!! " + highlight.getSelectedText());
+			//System.out.println("2222===>>>>StartRangeOffsetValue= " + startRangeOffsetValue2 + " EndOffRangeSetValue= " + endOffRangeSetValue2 + " FecondPageContent.length= " + secondPageContent.length() );
+			System.out.println("originalHighlight===>>>>" + originalHighlight);
+			System.out.println("====>>>> validateDiffOffSet Success !!! " +secondPageContent.substring(startRangeOffsetValue2, endOffRangeSetValue2) );
 		    flag=1;
 		}
 		if(flag == 0) {
@@ -233,7 +233,7 @@ public class Main {
 			matcher = p.matcher(secondPageContent);
 			if(count == 1 && matcher.find()) {
 				newHighlights.add(new Highlight(highlight.getId(), matcher.start(), matcher.end(), highlight.getPageId(),highlight.getSelectedText()));
-				System.out.println("====>>>> validateOneOccur Success !!! " + highlight.getSelectedText());
+				System.out.println("====>>>> validateOneOccur Success !!! " + secondPageContent.substring(matcher.start(), matcher.end() ));
 				return true;
 			} 
 		return false;
