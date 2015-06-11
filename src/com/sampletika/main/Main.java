@@ -184,7 +184,7 @@ public class Main {
 	public static Boolean validateSameOffset(Highlight highlight) {
 		String oldHighlight;
 		String highlightText = secondPageContent.substring(highlight.getStartOffset(), highlight.getEndOffset());
-		String m = highlightText.replaceAll("@{3,}", "");
+		String m = highlightText.replaceAll("@{3,}", "").replaceAll("\\s+", ".");
 		if(!CharMatcher.ASCII.matchesAllOf(m)) {
 			m = highlightText.replaceAll("\\P{Print}", ".");
 		}
