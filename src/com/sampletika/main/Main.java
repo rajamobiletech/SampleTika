@@ -31,6 +31,7 @@ import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.sax.BodyContentHandler;
 import org.xml.sax.SAXException;
 
+import com.google.common.base.CharMatcher;
 import com.sampletika.model.Highlight;
 
 import org.json.simple.JSONArray;
@@ -79,8 +80,8 @@ public class Main {
 		BodyContentHandler handler1 = new BodyContentHandler();
 		BodyContentHandler handler2 = new BodyContentHandler();
 		
-		File file1 = new File("/Users/tilakk/projects/testPages/33.xhtml");
-		File file2 = new File("/Users/tilakk/projects/testPages/33new.xhtml");
+		File file1 = new File("/Users/rajad/projects/testPages/33.xhtml");
+		File file2 = new File("/Users/rajad/projects/testPages/33new.xhtml");
 		FileInputStream fis1 = null;
 		FileInputStream fis2 = null;
 		Document pageDoc1 = null;
@@ -181,9 +182,14 @@ public class Main {
 	}
 
 	public static Boolean validateSameOffset(Highlight highlight) {
+		String oldHighlight;
 		String highlightText = secondPageContent.substring(highlight.getStartOffset(), highlight.getEndOffset());
 		String m = highlightText.replaceAll("@{3,}", "");
-		if(m.equals(highlight.getSelectedText())) {
+		if(!CharMatcher.ASCII.matchesAllOf(m)) {
+			m = highlightText.replaceAll("\\P{Print}", ".");
+		}
+		oldHighlight = highlight.getSelectedText().replaceAll("\\s+", ".");
+		if(m.equals(oldHighlight)) {
 			newHighlights.add(new Highlight(highlight.getId(), highlight.getStartOffset(), highlight.getEndOffset(), highlight.getPageId(),highlight.getSelectedText()));
 			System.out.println("====>>>> validateSameOffset Success !!! " + secondPageContent.substring(highlight.getStartOffset(),highlight.getEndOffset()));
 		}else {
