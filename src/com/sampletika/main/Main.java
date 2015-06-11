@@ -184,11 +184,11 @@ public class Main {
 	public static Boolean validateSameOffset(Highlight highlight) {
 		String oldHighlight;
 		String highlightText = secondPageContent.substring(highlight.getStartOffset(), highlight.getEndOffset());
-		String m = highlightText.replaceAll("@{3,}", "").replaceAll("\\s+", ".");
+		String m = highlightText.replaceAll("@{3,}", "").replaceAll("\\s{1}", ".");
 		if(!CharMatcher.ASCII.matchesAllOf(m)) {
-			m = highlightText.replaceAll("\\P{Print}", ".");
+			m = m.replaceAll("\\P{Print}", ".");
 		}
-		oldHighlight = highlight.getSelectedText().replaceAll("\\s+", ".");
+		oldHighlight = highlight.getSelectedText().replaceAll("\\s{1}", ".").replaceAll("&lt;", "<").replaceAll("&gt;", ">").replaceAll("&amp;", "&");
 		if(m.equals(oldHighlight)) {
 			newHighlights.add(new Highlight(highlight.getId(), highlight.getStartOffset(), highlight.getEndOffset(), highlight.getPageId(),highlight.getSelectedText()));
 			System.out.println("====>>>> validateSameOffset Success !!! " + secondPageContent.substring(highlight.getStartOffset(),highlight.getEndOffset()));
@@ -219,7 +219,7 @@ public class Main {
 			int endOffRangeSetValue2 = matcher.end()+5 < secondPageContent.length() ? matcher.end()-5 : matcher.end();
 			newHighlights.add(new Highlight(highlight.getId(), startRangeOffsetValue2, endOffRangeSetValue2, highlight.getPageId(),highlight.getSelectedText()));
 			//System.out.println("2222===>>>>StartRangeOffsetValue= " + startRangeOffsetValue2 + " EndOffRangeSetValue= " + endOffRangeSetValue2 + " FecondPageContent.length= " + secondPageContent.length() );
-			System.out.println("originalHighlight===>>>>" + originalHighlight);
+			//System.out.println("originalHighlight===>>>>" + originalHighlight);
 			System.out.println("====>>>> validateDiffOffSet Success !!! " +secondPageContent.substring(startRangeOffsetValue2, endOffRangeSetValue2) );
 		    flag=1;
 		}
