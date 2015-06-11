@@ -80,8 +80,8 @@ public class Main {
 		BodyContentHandler handler1 = new BodyContentHandler();
 		BodyContentHandler handler2 = new BodyContentHandler();
 		
-		File file1 = new File("/Users/rajad/projects/testPages/33.xhtml");
-		File file2 = new File("/Users/rajad/projects/testPages/33new.xhtml");
+		File file1 = new File("/Users/tilakk/projects/testPages/33.xhtml");
+		File file2 = new File("/Users/tilakk/projects/testPages/33new.xhtml");
 		FileInputStream fis1 = null;
 		FileInputStream fis2 = null;
 		Document pageDoc1 = null;
@@ -193,6 +193,8 @@ public class Main {
 			newHighlights.add(new Highlight(highlight.getId(), highlight.getStartOffset(), highlight.getEndOffset(), highlight.getPageId(),highlight.getSelectedText()));
 			System.out.println("====>>>> validateSameOffset Success !!! " + secondPageContent.substring(highlight.getStartOffset(),highlight.getEndOffset()));
 		}else {
+			System.out.println("m===>>> " + m);
+			System.out.println("O===>>> " + oldHighlight);
 			return false;
 		}
 		return true;
@@ -231,7 +233,7 @@ public class Main {
 	
 	public static Boolean validateOneOccur(Highlight highlight) {
 			int count = 0;
-			Pattern p = Pattern.compile(highlight.getSelectedText());
+			Pattern p = Pattern.compile(highlight.getSelectedText().replaceAll("[({})]", "."));
 			Matcher matcher = p.matcher(secondPageContent);
 			while(matcher.find() && count < 2){
 				count++;
