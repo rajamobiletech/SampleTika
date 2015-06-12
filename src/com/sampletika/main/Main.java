@@ -80,8 +80,8 @@ public class Main {
 		BodyContentHandler handler1 = new BodyContentHandler();
 		BodyContentHandler handler2 = new BodyContentHandler();
 		
-		File file1 = new File("/Users/tilakk/projects/testPages/33.xhtml");
-		File file2 = new File("/Users/tilakk/projects/testPages/33new.xhtml");
+		File file1 = new File("/Users/rajad/projects/testPages/139.xhtml");
+		File file2 = new File("/Users/rajad/projects/testPages/139new.xhtml");
 		FileInputStream fis1 = null;
 		FileInputStream fis2 = null;
 		Document pageDoc1 = null;
@@ -189,6 +189,9 @@ public class Main {
 			m = m.replaceAll("\\P{Print}", ".");
 		}
 		oldHighlight = highlight.getSelectedText().replaceAll("\\s{1}", ".").replaceAll("&lt;", "<").replaceAll("&gt;", ">").replaceAll("&amp;", "&");
+		if(!CharMatcher.ASCII.matchesAllOf(oldHighlight)) {
+			oldHighlight = oldHighlight.replaceAll("\\P{Print}", ".");
+		}
 		if(m.equals(oldHighlight)) {
 			newHighlights.add(new Highlight(highlight.getId(), highlight.getStartOffset(), highlight.getEndOffset(), highlight.getPageId(),highlight.getSelectedText()));
 			System.out.println("====>>>> validateSameOffset Success !!! " + secondPageContent.substring(highlight.getStartOffset(),highlight.getEndOffset()));
