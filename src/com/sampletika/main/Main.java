@@ -13,6 +13,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Iterator;
+import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,7 +32,10 @@ import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.sax.BodyContentHandler;
 import org.xml.sax.SAXException;
 
+
+
 import com.google.common.base.CharMatcher;
+//import com.google.common.base.CharMatcher;
 import com.sampletika.model.Highlight;
 
 import org.json.simple.JSONArray;
@@ -45,11 +49,16 @@ public class Main {
 	public static String secondPageContent;
 	public static JSONArray highlights;
 	public static JSONArray newHighlights;
+	public static String bookLang = "en";
 	
 	public static void main(String args[]){
 		getDbHighlights();
-		getPageContent();
-		getAllHightlight();
+		if(bookLang.equals("en")) {
+			getPageContentForEng();
+		}else {
+			getPageContentForCH();
+		}
+		getAllHightlight(bookLang);
 	}
 
 	public static void getDbHighlights() {
@@ -76,14 +85,13 @@ public class Main {
 		}
 	}
 	
-	public static void getPageContent() {
+	
+	public static void getPageContentForEng() {
 		BodyContentHandler handler1 = new BodyContentHandler();
 		BodyContentHandler handler2 = new BodyContentHandler();
 		
-		File file1 = new File("/Users/rajad/projects/testPages/139.xhtml");
-		File file2 = new File("/Users/rajad/projects/testPages/139new.xhtml");
-		FileInputStream fis1 = null;
-		FileInputStream fis2 = null;
+		File file1 = new File("/Users/tilakk/projects/testPages/10c.html");
+		File file2 = new File("/Users/tilakk/projects/testPages/10cnew.html");
 		Document pageDoc1 = null;
 		Document pageDoc2 = null;
 		// Removing Glossary pop up elements from content of page v1.0 content
@@ -119,7 +127,8 @@ public class Main {
 		} catch (IOException e) {	
 			e.printStackTrace();
 		}
-		
+		FileInputStream fis1 = null;
+		FileInputStream fis2 = null;
 		try {
 			fis1 = new FileInputStream(file1);
 			fis2 = new FileInputStream(file2);
@@ -168,11 +177,53 @@ public class Main {
 		}
 	}
 	
-	public static void getAllHightlight() {
+	
+	public static void getPageContentForCH() {
+		File file1 = new File("/Users/tilakk/Projects/TestCases/samplePhantomjs/temp1.html");
+		File file2 = new File("/Users/tilakk/Projects/TestCases/samplePhantomjs/temp2.html");
+//		BodyContentHandler handler1 = new BodyContentHandler();
+//		BodyContentHandler handler2 = new BodyContentHandler();
+		int exitStatus1 = 0;
+		int exitStatus2 = 0;
+		Process process1 = null;
+		Process process2 = null;
+		try {
+			//process1 = Runtime.getRuntime().exec("/usr/local/bin/phantomjs /Users/tilakk/Projects/newgit/SampleTika/src/com/sampletika/main/index.js /Users/tilakk/projects/testPages/17.xhtml /Users/tilakk/projects/testPages/17new.xhtml");
+			process1 = Runtime.getRuntime().exec("/usr/local/bin/phantomjs /Users/tilakk/Projects/newgit/SampleTika/src/com/sampletika/main/index.js /Users/tilakk/projects/testPages/9c.html /Users/tilakk/Projects/TestCases/samplePhantomjs/temp1.html");
+			exitStatus1 = process1.waitFor();
+			process2 = Runtime.getRuntime().exec("/usr/local/bin/phantomjs /Users/tilakk/Projects/newgit/SampleTika/src/com/sampletika/main/index.js /Users/tilakk/projects/testPages/9cnew.html /Users/tilakk/Projects/TestCases/samplePhantomjs/temp2.html");
+			exitStatus2 = process2.waitFor();
+		} catch (IOException | InterruptedException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		}
+		
+		if(exitStatus1==0) {
+			try {
+				firstPageContent = new Scanner(file1).useDelimiter("\\Z").next() ;
+				System.out.println("firstPageContent===" + firstPageContent);
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		if(exitStatus2==0) {
+			try {
+				secondPageContent = new Scanner(file2).useDelimiter("\\Z").next();
+				System.out.println("secondPageContent==" + secondPageContent);
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	public static void getAllHightlight(String bookLangage) {
 		for (Iterator iterator = highlights.iterator(); iterator.hasNext();) {
 			Highlight highlight = (Highlight) iterator.next();
-			if(!validateSameOffset(highlight)) {
-				if(!validateDiffOffSet(highlight)) {
+			if(!validateSameOffset(highlight, bookLangage)) {
+				if(!validateDiffOffSet(highlight, bookLangage)) {
 					if(!validateOneOccur(highlight)) {
 						System.out.println("validateOneOccur Failure !!!! " +highlight.getSelectedText() );
 					}
@@ -181,29 +232,34 @@ public class Main {
 		}
 	}
 
-	public static Boolean validateSameOffset(Highlight highlight) {
-		String oldHighlight;
-		String highlightText = secondPageContent.substring(highlight.getStartOffset(), highlight.getEndOffset());
-		String m = highlightText.replaceAll("@{2,}", "").replaceAll("\\s{1}", ".");
-		if(!CharMatcher.ASCII.matchesAllOf(m)) {
-			m = m.replaceAll("\\P{Print}", ".");
+	public static Boolean validateSameOffset(Highlight highlight, String bookLangage) {
+		String oldHighlight = highlight.getSelectedText();
+		String highlightText = secondPageContent.substring(highlight.getStartOffset(), highlight.getEndOffset()).replaceAll("\n", "").replaceAll("\t", "");
+		oldHighlight = highlight.getSelectedText().replaceAll("&lt;", "<").replaceAll("&gt;", ">").replaceAll("&amp;", "&");
+		
+		if(bookLangage.equals("en")){
+			highlightText = highlightText.replaceAll("@{2,}", "").replaceAll("\\s{1}", ".");
+	        if(!CharMatcher.ASCII.matchesAllOf(highlightText)) {
+	        	highlightText = highlightText.replaceAll("\\P{Print}", ".");
+	        }
+	        oldHighlight = highlight.getSelectedText().replaceAll("\\s{1}", ".").replaceAll("&lt;", "<").replaceAll("&gt;", ">").replaceAll("&amp;", "&");
+	        if(!CharMatcher.ASCII.matchesAllOf(oldHighlight)) {
+	            oldHighlight = oldHighlight.replaceAll("\\P{Print}", ".");
+	        }
 		}
-		oldHighlight = highlight.getSelectedText().replaceAll("\\s{1}", ".").replaceAll("&lt;", "<").replaceAll("&gt;", ">").replaceAll("&amp;", "&");
-		if(!CharMatcher.ASCII.matchesAllOf(oldHighlight)) {
-			oldHighlight = oldHighlight.replaceAll("\\P{Print}", ".");
-		}
-		if(m.equals(oldHighlight)) {
+
+		if(highlightText.equals(oldHighlight)) {
 			newHighlights.add(new Highlight(highlight.getId(), highlight.getStartOffset(), highlight.getEndOffset(), highlight.getPageId(),highlight.getSelectedText()));
-			System.out.println("====>>>> validateSameOffset Success !!! " + secondPageContent.substring(highlight.getStartOffset(),highlight.getEndOffset()));
+			System.out.println("====>>>> validateSameOffset Success !!! " + secondPageContent.substring(highlight.getStartOffset(),highlight.getEndOffset()).replaceAll("@{2,}", ""));
 		}else {
-			System.out.println("m===>>> " + m);
+			System.out.println("m===>>> " + highlightText);
 			System.out.println("O===>>> " + oldHighlight);
 			return false;
 		}
 		return true;
 	}
 
-	public static Boolean validateDiffOffSet(Highlight highlight) {
+	public static Boolean validateDiffOffSet(Highlight highlight, String bookLangage) {
 		int count = 0;
 		int startRangeOffsetValue = (highlight.getStartOffset()-5 > 0) ? highlight.getStartOffset()-5 : highlight.getStartOffset();
 		int endOffRangeSetValue = (highlight.getEndOffset()+5) < firstPageContent.length() ? highlight.getEndOffset()+5 : highlight.getEndOffset();
