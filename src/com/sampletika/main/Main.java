@@ -12,8 +12,12 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Scanner;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -59,8 +63,44 @@ public class Main {
 			getPageContentForCH();
 		}
 		getAllHightlight(bookLang);
+		//testFunction();
 	}
+	
 
+	public static void testFunction() {
+		List<String> list = new ArrayList<String>(Arrays.asList(new String[] 
+                {"a", "b","c","e", "d", "a1", "a2","b2","c3","b31"}));
+		System.out.println("List Before: " + list);
+		List<Integer> inde = new ArrayList<Integer>();
+    	List<String> groupNames = new ArrayList<String>();
+		for (ListIterator<String> it1=list.listIterator(); it1.hasNext();) {
+		    while (it1.hasNext()) {
+		    	List<String> groupList = new ArrayList<String>();
+		    	int w1 = it1.nextIndex();
+		    	String group1= (String)it1.next();
+			    	if(!inde.contains(w1)) {
+			    		groupList.add(group1);
+			    		groupNames.add(group1);
+			    	}else {
+			    		groupList = null;
+			    	}
+	    		for (ListIterator<String> it2=list.listIterator(it1.nextIndex()); it2.hasNext();) {
+	    			while (it2.hasNext()) {
+	    				int w = it2.nextIndex();
+	    		    	String group2= (String)it2.next();
+	    		    	if(group2.contains(group1)) {
+	    		    		groupList.add(group2);
+	    		    		inde.add(w);
+	    		    	}
+	    		    }
+	    		}
+	    		if(groupList != null)
+	    		System.out.println("groupList="+groupList);
+		    }
+		}
+		System.out.println("groupNames " + groupNames);
+	}
+	
 	public static void getDbHighlights() {
 		Connection con = null;
         Statement st = null;
@@ -90,8 +130,8 @@ public class Main {
 		BodyContentHandler handler1 = new BodyContentHandler();
 		BodyContentHandler handler2 = new BodyContentHandler();
 		
-		File file1 = new File("/Users/tilakk/projects/testPages/10c.html");
-		File file2 = new File("/Users/tilakk/projects/testPages/10cnew.html");
+		File file1 = new File("/Users/rajad/projects/testPages/33.xhtml");
+		File file2 = new File("/Users/rajad/projects/testPages/33new.xhtml");
 		Document pageDoc1 = null;
 		Document pageDoc2 = null;
 		// Removing Glossary pop up elements from content of page v1.0 content
@@ -235,7 +275,7 @@ public class Main {
 	public static Boolean validateSameOffset(Highlight highlight, String bookLangage) {
 		String oldHighlight = highlight.getSelectedText();
 		String highlightText = secondPageContent.substring(highlight.getStartOffset(), highlight.getEndOffset()).replaceAll("\n", "").replaceAll("\t", "");
-		oldHighlight = highlight.getSelectedText().replaceAll("&lt;", "<").replaceAll("&gt;", ">").replaceAll("&amp;", "&");
+		oldHighlight = oldHighlight.replaceAll("&lt;", "<").replaceAll("&gt;", ">").replaceAll("&amp;", "&");
 		
 		if(bookLangage.equals("en")){
 			highlightText = highlightText.replaceAll("@{2,}", "").replaceAll("\\s{1}", ".");
@@ -246,7 +286,10 @@ public class Main {
 	        if(!CharMatcher.ASCII.matchesAllOf(oldHighlight)) {
 	            oldHighlight = oldHighlight.replaceAll("\\P{Print}", ".");
 	        }
-		}
+		}else {
+                oldHighlight = oldHighlight.replaceAll(" ", "#").replaceAll("\n", "");
+                highlightText = highlightText.replaceAll(" ", "#").replaceAll(" ", "#");
+        }
 
 		if(highlightText.equals(oldHighlight)) {
 			newHighlights.add(new Highlight(highlight.getId(), highlight.getStartOffset(), highlight.getEndOffset(), highlight.getPageId(),highlight.getSelectedText()));
