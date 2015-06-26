@@ -12,12 +12,8 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Scanner;
-import java.util.List;
-import java.util.ListIterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,7 +35,6 @@ import org.xml.sax.SAXException;
 
 
 import com.google.common.base.CharMatcher;
-//import com.google.common.base.CharMatcher;
 import com.sampletika.model.Highlight;
 
 import org.json.simple.JSONArray;
@@ -51,9 +46,10 @@ import org.jsoup.select.Elements;
 public class Main {
 	public static String firstPageContent;
 	public static String secondPageContent;
+	public static String moduleCheckContent;
 	public static JSONArray highlights;
 	public static JSONArray newHighlights;
-	public static String bookLang = "en";
+	public static String bookLang = "en1";
 	
 	public static void main(String args[]){
 		getDbHighlights();
@@ -63,44 +59,8 @@ public class Main {
 			getPageContentForCH();
 		}
 		getAllHightlight(bookLang);
-		//testFunction();
 	}
-	
 
-	public static void testFunction() {
-		List<String> list = new ArrayList<String>(Arrays.asList(new String[] 
-                {"a", "b","c","e", "d", "a1", "a2","b2","c3","b31"}));
-		System.out.println("List Before: " + list);
-		List<Integer> inde = new ArrayList<Integer>();
-    	List<String> groupNames = new ArrayList<String>();
-		for (ListIterator<String> it1=list.listIterator(); it1.hasNext();) {
-		    while (it1.hasNext()) {
-		    	List<String> groupList = new ArrayList<String>();
-		    	int w1 = it1.nextIndex();
-		    	String group1= (String)it1.next();
-			    	if(!inde.contains(w1)) {
-			    		groupList.add(group1);
-			    		groupNames.add(group1);
-			    	}else {
-			    		groupList = null;
-			    	}
-	    		for (ListIterator<String> it2=list.listIterator(it1.nextIndex()); it2.hasNext();) {
-	    			while (it2.hasNext()) {
-	    				int w = it2.nextIndex();
-	    		    	String group2= (String)it2.next();
-	    		    	if(group2.contains(group1)) {
-	    		    		groupList.add(group2);
-	    		    		inde.add(w);
-	    		    	}
-	    		    }
-	    		}
-	    		if(groupList != null)
-	    		System.out.println("groupList="+groupList);
-		    }
-		}
-		System.out.println("groupNames " + groupNames);
-	}
-	
 	public static void getDbHighlights() {
 		Connection con = null;
         Statement st = null;
@@ -124,16 +84,18 @@ public class Main {
 				e2.printStackTrace();
 		}
 	}
-	
+
 	
 	public static void getPageContentForEng() {
 		BodyContentHandler handler1 = new BodyContentHandler();
 		BodyContentHandler handler2 = new BodyContentHandler();
+		BodyContentHandler handler3 = new BodyContentHandler();
 		
-		File file1 = new File("/Users/rajad/projects/testPages/33.xhtml");
-		File file2 = new File("/Users/rajad/projects/testPages/33new.xhtml");
+		File file1 = new File("/Users/tilakk/projects/testPages/154c.html");
+		File file2 = new File("/Users/tilakk/projects/testPages/154cnew.html");
 		Document pageDoc1 = null;
 		Document pageDoc2 = null;
+		Document pageDoc3 = null;
 		// Removing Glossary pop up elements from content of page v1.0 content
 		try {
 			pageDoc1 = Jsoup.parse(file1, null);
@@ -147,6 +109,15 @@ public class Main {
 			}			
 			Elements ele1 = pageDoc1.getElementsByAttributeValue("style", "display: none;");
 			ele1.remove();
+			els = pageDoc1.getElementsByClass("Col2InnerWrapper");
+			for (Element el : els) {
+				 Element j = el.appendElement("div");
+						 j.appendText("::");
+//						 j = el.prependElement("div");
+//						 j.appendText("--");
+			}
+//			System.out.println("page1===>"+pageDoc1);
+			
 			
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -164,6 +135,15 @@ public class Main {
 			}
 			Elements ele1 = pageDoc2.getElementsByAttributeValue("style", "display: none;");
 			ele1.remove();
+			pageDoc3 = pageDoc2.clone();
+			
+			els = pageDoc2.getElementsByClass("Col2");
+			for (Element el : els) {
+				 Element j = el.appendElement("div");
+						 j.appendText("::");
+//						 j = el.prependElement("div");
+//						 j.appendText("--");
+			}
 		} catch (IOException e) {	
 			e.printStackTrace();
 		}
@@ -176,18 +156,32 @@ public class Main {
 			e1.printStackTrace();
 		}
 		
+		Elements els = pageDoc3.getElementsByClass("Col1");
+		els.remove();
+		els = pageDoc3.getElementsByClass("CorrResponse");
+		els.remove();
+		els = pageDoc3.getElementsByClass("ThisIsCorrResponse");
+		els.remove();
+		els = pageDoc3.getElementsByClass("IncorrResponse");
+		els.remove();
+		
 		org.w3c.dom.Document w3cDoc1= DOMBuilder.jsoup2DOM(pageDoc1);
 		org.w3c.dom.Document w3cDoc2= DOMBuilder.jsoup2DOM(pageDoc2);
+		org.w3c.dom.Document w3cDoc3= DOMBuilder.jsoup2DOM(pageDoc3);
 
         ByteArrayOutputStream outputStream1 = new ByteArrayOutputStream();
         ByteArrayOutputStream outputStream2 = new ByteArrayOutputStream();
+        ByteArrayOutputStream outputStream3 = new ByteArrayOutputStream();
         Source xmlSource1 = new DOMSource(w3cDoc1);
         Source xmlSource2 = new DOMSource(w3cDoc2);
+        Source xmlSource3 = new DOMSource(w3cDoc3);
         Result outputTarget1 = new StreamResult(outputStream1);
         Result outputTarget2 = new StreamResult(outputStream2);
+        Result outputTarget3 = new StreamResult(outputStream3);
         try {
 			TransformerFactory.newInstance().newTransformer().transform(xmlSource1, outputTarget1);
 			TransformerFactory.newInstance().newTransformer().transform(xmlSource2, outputTarget2);
+			TransformerFactory.newInstance().newTransformer().transform(xmlSource3, outputTarget3);
 		} catch (TransformerConfigurationException e1) {
 			e1.printStackTrace();
 		} catch (TransformerException e1) {
@@ -197,6 +191,7 @@ public class Main {
 		}
         InputStream is1 = new ByteArrayInputStream(outputStream1.toByteArray());
         InputStream is2 = new ByteArrayInputStream(outputStream2.toByteArray());
+        InputStream is3 = new ByteArrayInputStream(outputStream3.toByteArray());
         
 		AutoDetectParser parser = new AutoDetectParser();
 		Metadata metadata = new Metadata();
@@ -211,6 +206,10 @@ public class Main {
 	        parser1.parse(is2, handler2, metadata1);
 	        secondPageContent = handler2.toString().replaceAll("\t", "").replaceAll("\n", "");
 	        System.out.println("File2:>>>>>>>"+secondPageContent);System.out.println();
+	        
+	        parser1.parse(is3, handler3, metadata1);
+	        moduleCheckContent = handler3.toString().replaceAll("\t", "").replaceAll("\n", "");
+	        //System.out.println("File3:>>>>>>>"+moduleCheckContent);System.out.println();
 	    } catch (IOException | SAXException | TikaException e) {
 		e.printStackTrace();
 		} finally {
@@ -229,9 +228,9 @@ public class Main {
 		Process process2 = null;
 		try {
 			//process1 = Runtime.getRuntime().exec("/usr/local/bin/phantomjs /Users/tilakk/Projects/newgit/SampleTika/src/com/sampletika/main/index.js /Users/tilakk/projects/testPages/17.xhtml /Users/tilakk/projects/testPages/17new.xhtml");
-			process1 = Runtime.getRuntime().exec("/usr/local/bin/phantomjs /Users/tilakk/Projects/newgit/SampleTika/src/com/sampletika/main/index.js /Users/tilakk/projects/testPages/9c.html /Users/tilakk/Projects/TestCases/samplePhantomjs/temp1.html");
+			process1 = Runtime.getRuntime().exec("/usr/local/bin/phantomjs /Users/tilakk/Projects/newgit/SampleTika/src/com/sampletika/main/index.js /Users/tilakk/projects/testPages/154c.html /Users/tilakk/Projects/TestCases/samplePhantomjs/temp1.html");
 			exitStatus1 = process1.waitFor();
-			process2 = Runtime.getRuntime().exec("/usr/local/bin/phantomjs /Users/tilakk/Projects/newgit/SampleTika/src/com/sampletika/main/index.js /Users/tilakk/projects/testPages/9cnew.html /Users/tilakk/Projects/TestCases/samplePhantomjs/temp2.html");
+			process2 = Runtime.getRuntime().exec("/usr/local/bin/phantomjs /Users/tilakk/Projects/newgit/SampleTika/src/com/sampletika/main/index.js /Users/tilakk/projects/testPages/154cnew.html /Users/tilakk/Projects/TestCases/samplePhantomjs/temp2.html");
 			exitStatus2 = process2.waitFor();
 		} catch (IOException | InterruptedException e2) {
 			// TODO Auto-generated catch block
@@ -272,9 +271,12 @@ public class Main {
 		}
 	}
 
+
 	public static Boolean validateSameOffset(Highlight highlight, String bookLangage) {
 		String oldHighlight = highlight.getSelectedText();
-		String highlightText = secondPageContent.substring(highlight.getStartOffset(), highlight.getEndOffset()).replaceAll("\n", "").replaceAll("\t", "");
+		String highlightText = secondPageContent.substring(highlight.getStartOffset(), highlight.getEndOffset()).replaceAll("\n", "").replaceAll("\t", "").replaceAll("##", "");
+		
+
 		oldHighlight = oldHighlight.replaceAll("&lt;", "<").replaceAll("&gt;", ">").replaceAll("&amp;", "&");
 		
 		if(bookLangage.equals("en")){
@@ -287,14 +289,14 @@ public class Main {
 	            oldHighlight = oldHighlight.replaceAll("\\P{Print}", ".");
 	        }
 		}else {
-                oldHighlight = oldHighlight.replaceAll(" ", "#").replaceAll("\n", "");
-                highlightText = highlightText.replaceAll(" ", "#").replaceAll(" ", "#");
-        }
+			oldHighlight = oldHighlight.replaceAll(" ", "#").replaceAll("\n", "");
+			highlightText = highlightText.replaceAll(" ", "#").replaceAll(" ", "#");
+		}
 
 		if(highlightText.equals(oldHighlight)) {
 			newHighlights.add(new Highlight(highlight.getId(), highlight.getStartOffset(), highlight.getEndOffset(), highlight.getPageId(),highlight.getSelectedText()));
 			System.out.println("====>>>> validateSameOffset Success !!! " + secondPageContent.substring(highlight.getStartOffset(),highlight.getEndOffset()).replaceAll("@{2,}", ""));
-		}else {
+		} else {
 			System.out.println("m===>>> " + highlightText);
 			System.out.println("O===>>> " + oldHighlight);
 			return false;
@@ -306,25 +308,28 @@ public class Main {
 		int count = 0;
 		int startRangeOffsetValue = (highlight.getStartOffset()-5 > 0) ? highlight.getStartOffset()-5 : highlight.getStartOffset();
 		int endOffRangeSetValue = (highlight.getEndOffset()+5) < firstPageContent.length() ? highlight.getEndOffset()+5 : highlight.getEndOffset();
-		//System.out.println("1111===>>>>StartRangeOffsetValue= " + startRangeOffsetValue + " EndOffRangeSetValue= " + endOffRangeSetValue + " FirstPageContent.length= " + firstPageContent.length() );
 		String originalHighlight = firstPageContent.substring(startRangeOffsetValue , endOffRangeSetValue);
 		int flag=0;
-		//originalHighlight = Pattern.quote(originalHighlight);
+		originalHighlight = Pattern.quote(originalHighlight);
 		//originalHighlight = originalHighlight.replaceAll(regex, replacement)
-		originalHighlight = originalHighlight.replaceAll("[({})]", ".");
+		//originalHighlight = originalHighlight.replaceAll("[({#/})]", ".");
 		Pattern p = Pattern.compile(originalHighlight);
-		Matcher matcher = p.matcher(secondPageContent);
+		Matcher matcher = p.matcher(secondPageContent);	
 		while (matcher.find() && count < 2) {
 			count++;
 		}
 		matcher = p.matcher(secondPageContent);
 		if(count ==1 && matcher.find()){
-			int startRangeOffsetValue2 = matcher.start()-5 > 0? matcher.start()+5 : matcher.start();
+			int startRangeOffsetValue2;
+ 
+			 if (startRangeOffsetValue==0)
+				startRangeOffsetValue2 = matcher.start();
+			else
+				startRangeOffsetValue2 = matcher.start()-5 > 0? matcher.start()+5 : matcher.start();
 			int endOffRangeSetValue2 = matcher.end()+5 < secondPageContent.length() ? matcher.end()-5 : matcher.end();
 			newHighlights.add(new Highlight(highlight.getId(), startRangeOffsetValue2, endOffRangeSetValue2, highlight.getPageId(),highlight.getSelectedText()));
-			//System.out.println("2222===>>>>StartRangeOffsetValue= " + startRangeOffsetValue2 + " EndOffRangeSetValue= " + endOffRangeSetValue2 + " FecondPageContent.length= " + secondPageContent.length() );
-			//System.out.println("originalHighlight===>>>>" + originalHighlight);
-			System.out.println("====>>>> validateDiffOffSet Success !!! " +secondPageContent.substring(startRangeOffsetValue2, endOffRangeSetValue2) );
+			System.out.println();
+			System.out.println("====>>>> validateDiffOffSet Success !!! " +secondPageContent.substring(startRangeOffsetValue2, endOffRangeSetValue2) +"  OFFSET==>>" + startRangeOffsetValue2+ " // "+ endOffRangeSetValue2  );
 		    flag=1;
 		}
 		if(flag == 0) {
