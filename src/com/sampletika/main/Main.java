@@ -274,7 +274,7 @@ public class Main {
 
 	public static Boolean validateSameOffset(Highlight highlight, String bookLangage) {
 		String oldHighlight = highlight.getSelectedText();
-		String highlightText = secondPageContent.substring(highlight.getStartOffset(), highlight.getEndOffset()).replaceAll("\n", "").replaceAll("\t", "").replaceAll("##", "");
+		String highlightText = secondPageContent.substring(highlight.getStartOffset(), highlight.getEndOffset()).replaceAll("\n", "").replaceAll("\t", "");
 		
 
 		oldHighlight = oldHighlight.replaceAll("&lt;", "<").replaceAll("&gt;", ">").replaceAll("&amp;", "&");
